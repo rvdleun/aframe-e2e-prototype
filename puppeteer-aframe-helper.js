@@ -1,3 +1,37 @@
+module.exports.HandControlEvents = {
+    GRIP_DOWN: 'gripdown',
+    GRIP_UP: 'gripup',
+    POINT_UP: 'point_up',
+    POINT_DOWN: 'point_down',
+    THUMB_UP: 'thumbup',
+    THUMB_DOWN: 'thumbdown',
+    POINTING_START: 'pointingstart',
+    POINTING_END: 'pointingend',
+    PISTOL_START: 'pistolstart',
+    PISTOL_END: 'pistolend',
+};
+
+module.exports.emitHandEvent = (page, event, hand) => {
+    if (!hand) {
+        hand = 'right';
+    }
+
+    return page.evaluate(async (hand, event) => {
+        return new Promise((resolve, reject) => {
+            const handEl = document.querySelector(`[hand-controls=${hand}`);
+            if (!handEl) {
+                reject(`Unable to find hand-controls. Hand: ${hand}`);
+                return;
+            }
+
+            console.log('Firing event', event);
+            handEl.dispatchEvent(new CustomEvent(event));
+            setTimeout(() => resolve(), 3000);
+        });
+    }, hand, event);
+};
+
+
 module.exports.moveHand = (page, position, hand) => {
     if (!hand) {
         hand = 'right';
@@ -7,7 +41,7 @@ module.exports.moveHand = (page, position, hand) => {
         return new Promise((resolve, reject) => {
             const handEl = document.querySelector(`[hand-controls=${hand}`);
             if (!handEl) {
-                reject('Unable to find hand');
+                reject(`Unable to find hand-controls. Hand: ${hand}`);
                 return;
             }
 

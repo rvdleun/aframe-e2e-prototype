@@ -32,15 +32,42 @@ describe('The box', () => {
         expect(position).toStrictEqual({x: 0, y: 1.6, z: -3});
     });
 
-    describe('When moving a hand closer to the box', () => {
+    describe('When moving a hand within interaction range', () => {
         beforeEach(async () => {
-            await AframeHelper.moveHand(page, {x: 0, y: 1.6, z: -2.5}, 'right');
+            await AframeHelper.moveHand(page, {x: 0, y: 1.6, z: -2.5});
         });
 
         it('should have the box turn yellow', async () => {
-            const box = await page.$('a-box');
-            const color = await page.evaluate(box => box.getAttribute('color'), box);
+            const color = await page.evaluate(() => document.querySelector('a-box').getAttribute('color'));
             expect(color).toBe('yellow');
+        });
+
+        describe('And gripping the controller', () => {
+            beforeEach(async () => {
+                await AframeHelper.emitHandEvent(page, AframeHelper.HandControlEvents.GRIP_DOWN);
+            });
+
+            it('should have the box turn blue', async () => {
+                const color = await page.evaluate(() => document.querySelector('a-box').getAttribute('color'));
+                expect(color).toBe('blue');
+            });
+        });
+    });
+
+    describe('When a hand is outside the interaction range', () => {
+        beforeEach(async () => {
+            await AframeHelper.moveHand(page, {x: 0, y: 1.6, z: -4});
+        });
+
+        describe('And gripping the controller', () => {
+            beforeEach(async () => {
+                await AframeHelper.emitHandEvent(page, AframeHelper.HandControlEvents.GRIP_DOWN);
+            });
+
+            it('should remain red', async () => {
+                const color = await page.evaluate(() => document.querySelector('a-box').getAttribute('color'));
+                expect(color).toBe('red');
+            });
         });
     });
 });
